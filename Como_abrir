@@ -1,0 +1,14 @@
+Para rodar no Windows o processo  será abrir o CMD criar e ativar um
+ambiente virtual
+
+python -m venv .venv
+
+e depois
+.venv\Scripts\activate
+
+instalar o Kivy:  pip install "kivy[full]"
+
+e rodar: python main.py
+
+by Lucas Silva
+

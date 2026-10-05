@@ -1,0 +1,148 @@
+<GerenciadorTelas>:
+    TelaPrincipal:
+        name: 'principal'
+    TelaHistorico:
+        name: 'historico'
+
+<TelaPrincipal>:
+    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 20
+        spacing: 10
+
+        # Bloco de Saldo
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 0.2
+            canvas.before:
+                Color:
+                    rgba: 0.1, 0.5, 0.3, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            Label:
+                text: "Saldo Atual"
+                font_size: 16
+            Label:
+                text: root.total_carteira
+                font_size: 32
+                bold: True
+
+        # Input de Valor
+        TextInput:
+            id: input_valor
+            hint_text: "Digite o valor (ex: 12.50)"
+            multiline: False
+            input_filter: 'float'
+            size_hint_y: 0.1
+            font_size: 18
+
+        # Seção de Receitas
+        Label:
+            text: "Adicionar Receita (Entrada)"
+            bold: True
+            size_hint_y: 0.05
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: 10
+            size_hint_y: 0.1
+            Button:
+                text: "Subsidio"
+                background_color: 0.2, 0.7, 0.2, 1
+                on_press: root.salvar_transacao("Receita", "Salário", input_valor.text); input_valor.text = ""
+            Button:
+                text: "Outros"
+                background_color: 0.2, 0.6, 0.4, 1
+                on_press: root.salvar_transacao("Receita", "Outros", input_valor.text); input_valor.text = ""
+
+        # Seção de Despesas
+        Label:
+            text: "Adicionar Despesa (Saída)"
+            bold: True
+            size_hint_y: 0.05
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: 5
+            size_hint_y: 0.1
+            Button:
+                text: "Restauração"
+                background_color: 0.8, 0.3, 0.3, 1
+                on_press: root.salvar_transacao("Despesa", "Restauração", input_valor.text); input_valor.text = ""
+            Button:
+                text: "Saúde"
+                background_color: 0.8, 0.5, 0.2, 1
+                on_press: root.salvar_transacao("Despesa", "Saúde", input_valor.text); input_valor.text = ""
+            Button:
+                text: "Gerais"
+                background_color: 0.6, 0.4, 0.4, 1
+                on_press: root.salvar_transacao("Despesa", "Outros", input_valor.text); input_valor.text = ""
+
+        # Botão para ir ao Histórico
+        Button:
+            text: "Ver Histórico de Transações"
+            size_hint_y: 0.15
+            on_press: root.manager.current = 'historico'
+    Image:
+        id: mario_sprite
+        source: 'mario.gif'
+        anim_delay: 0.10       # Controla a velocidade da animação do GIF
+        size_hint: None, None
+        size: 80, 80           # Tamanho do boneco na tela
+        x: 0                   # Posição inicial X (esquerda)
+        y: 10                  # Posição Y (perto do rodapé do app)
+
+<TelaHistorico>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 20
+        spacing: 15
+
+        # Abas de Filtro
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: 0.15
+            spacing: 10
+            Button:
+                text: "Filtro Semanal"
+                on_press: root.exibir_historico("semanal")
+            Button:
+                text: "Filtro Mensal"
+                on_press: root.exibir_historico("mensal")
+
+        # Área de exibição do texto (Histórico)
+        ScrollView:
+            size_hint_y: 0.7
+            Label:
+                text: root.texto_historico
+                font_size: 16
+                halign: 'left'
+                valign: 'top'
+                size_hint_y: None
+                height: self.texture_size[1]
+                text_size: self.width, None
+
+        # Botão de exclusão
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: 0.15
+            spacing: 10
+            TextInput:
+                id: input_id_deletar
+                hint_text: "Para deletar uma operação errada, digite o ID desejado e carregue em Apagar Registo:"
+                multiline: True
+                input_filter: 'int'
+                size_hint_x: 0.6
+            Button:
+                text: "Apagar Registo"
+                background_color: 0.7, 0.1, 0.1, 1
+                size_hint_x: 0.4
+                on_press: root.deletar_transacao(input_id_deletar.text); input_id_deletar.text = ""
+
+
+	# Botão Voltar
+        Button:
+            text: "Voltar para o Início"
+            size_hint_y: 0.15
+            background_color: 0.3, 0.3, 0.3, 1
+            on_press: root.manager.current = 'principal'
