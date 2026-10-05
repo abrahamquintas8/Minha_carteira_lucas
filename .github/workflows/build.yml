@@ -25,15 +25,10 @@ jobs:
       - name: Install Buildozer and Cython
         run: |
           pip install --upgrade pip
-          pip install "buildozer==1.6.0" "cython<3.0"
+          # Instalamos a versão estável direto do repositório para corrigir as receitas do python-for-android
+          pip install git+https://github.com
+          pip install "cython<3.0"
 
       - name: Build with Buildozer
         run: |
           yes | buildozer -v android debug
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: App-Android-APK
-          path: bin/*.apk
-
