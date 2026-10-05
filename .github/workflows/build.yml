@@ -6,29 +6,19 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Build APK with Buildozer Action
+        uses: ArtemGovorov/buildozer-action@v1
         with:
-          python-version: '3.11'
+          command: buildozer -v android debug
 
-      - name: Install system dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev libgdbm-dev libsqlite3-dev libb2-dev libffi-dev uuid-dev alsa-utils libasound2-dev cmake
-
-      - name: Install Buildozer and Cython
-        run: |
-          pip install --upgrade pip
-          # Instalamos a versão estável direto do repositório para corrigir as receitas do python-for-android
-          pip install git+https://github.com
-          pip install "cython<3.0"
-
-      - name: Build with Buildozer
-        run: |
-          yes | buildozer -v android debug
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: App-Android-APK
+          path: bin/*.apk
