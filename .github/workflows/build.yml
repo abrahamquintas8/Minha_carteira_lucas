@@ -29,10 +29,15 @@ jobs:
           pip install --upgrade pip
           pip install "buildozer==1.5.0" "cython<3.0"
 
-      - name: Build APK with Buildozer
+      - name: Build with Buildozer
         run: |
-          buildozer android debug
-
+          # Aceita automaticamente todas as licenças pendentes do Android SDK e Build-Tools
+          mkdir -p ~/.android && touch ~/.android/repositories.cfg
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          
+          # Executa a compilação real do aplicativo
+          yes | buildozer android debug
+        
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
