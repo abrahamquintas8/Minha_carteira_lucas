@@ -1,45 +1,77 @@
-name: CI
+name: Build Android APK
+
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
 
     steps:
-      - name: Checkout repository
+      - name: Obter o projeto
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Configurar Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev libgdbm-dev libsqlite3-dev libb2-dev libffi-dev uuid-dev alsa-utils libasound2-dev cmake
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
 
-      - name: Install Buildozer and Cython
+      - name: Instalar dependencias do sistema
         run: |
-          pip install --upgrade pip
-          pip install "buildozer==1.5.0" "cython<3.0"
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            git zip unzip build-essential autoconf automake libtool pkg-config \
+            zlib1g-dev libncurses5-dev libssl-dev libgdbm-dev libsqlite3-dev \
+            libb2-dev libffi-dev uuid-dev alsa-utils libasound2-dev cmake
 
-      - name: Build with Buildozer
+      - name: Instalar Buildozer e Cython
         run: |
-          # Aceita automaticamente todas as licenças pendentes do Android SDK e Build-Tools
-          mkdir -p ~/.android && touch ~/.android/repositories.cfg
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          
-          # Executa a compilação real do aplicativo
-          yes | buildozer android debug
-        
-      - name: Upload APK Artifact
+          python -m pip install --upgrade pip
+          python -m pip install "buildozer==1.5.0" "Cython==0.29.37"
+
+      - name: Compilar APK
+        shell: bash
+        run: |
+          mkdir -p "$HOME/.android"
+          touch "$HOME/.android/repositories.cfg"
+          echo "A compilar. O log completo sera guardado nos artefactos."
+          status=0
+          buildozer android debug > buildozer.log 2>&1 || status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "::error::A compilacao falhou. Consulta o artefacto Buildozer-log."
+            tail -n 100 buildozer.log
+            exit "$status"
+          fi
+          echo "Compilacao concluida."
+          tail -n 20 buildozer.log
+
+      - name: Guardar log completo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Buildozer-log
+          path: buildozer.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Guardar APK
         uses: actions/upload-artifact@v4
         with:
           name: App-Android-APK
           path: bin/*.apk
+          if-no-files-found: error
+          retention-days: 14
