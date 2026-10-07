@@ -50,10 +50,16 @@ jobs:
           touch "$HOME/.android/repositories.cfg"
           echo "A compilar. O log completo sera guardado nos artefactos."
           status=0
-          buildozer android debug > buildozer.log 2>&1 || status=$?
+          buildozer -v android debug > buildozer.log 2>&1 || status=$?
           if [ "$status" -ne 0 ]; then
             echo "::error::A compilacao falhou. Consulta o artefacto Buildozer-log."
-            tail -n 100 buildozer.log
+            # Mostrar o erro anterior a lista de variaveis do ambiente.
+            # O log completo continua disponivel no artefacto.
+            awk '
+              { gsub(/\033\[[0-9;]*m/, "") }
+              /^# ENVIRONMENT:/ { environment = 1 }
+              !environment { print }
+            ' buildozer.log | tail -n 150
             exit "$status"
           fi
           echo "Compilacao concluida."
